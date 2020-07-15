@@ -1,4 +1,3 @@
-%global rust_arches x86_64 i686 armv7hl aarch64 ppc64 ppc64le s390x
 %{!?channel: %global channel stable}
 %global bootstrap_rust 1.37.0
 %global bootstrap_cargo 1.37.0
@@ -13,7 +12,7 @@ Release:             1
 Summary:             The Rust Programming Language
 License:             (ASL 2.0 or MIT) and (BSD and MIT)
 URL:                 https://www.rust-lang.org
-ExclusiveArch:       %{rust_arches}
+ExclusiveArch:       x86_64 aarch64
 %if "%{channel}" == "stable"
 %global rustc_package rustc-%{version}-src
 %else
