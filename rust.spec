@@ -12,7 +12,6 @@ Release:             1
 Summary:             The Rust Programming Language
 License:             (ASL 2.0 or MIT) and (BSD and MIT)
 URL:                 https://www.rust-lang.org
-ExclusiveArch:       x86_64 aarch64
 %if "%{channel}" == "stable"
 %global rustc_package rustc-%{version}-src
 %else
