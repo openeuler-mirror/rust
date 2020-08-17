@@ -134,7 +134,7 @@ Man pages and other related help documents for rust.
 %autosetup -n rustc-1.29.1-src -p1
 
 sed -i.try-py3 -e '/try python2.7/i try python3 "$@"' ./configure
-
+rm -rf src/llvm/
 rm -rf src/llvm-emscripten/
 sed -e '/*\//q' src/libbacktrace/backtrace.h >src/libbacktrace/LICENSE-libbacktrace
 
@@ -149,7 +149,8 @@ find src/vendor -name .cargo-checksum.json -exec sed -i.uncheck -e 's/"files":{[
 
 %configure --disable-option-checking --libdir=%{_prefix}/lib \
   --build=%{rust_triple} --host=%{rust_triple} --target=%{rust_triple} \
-  --local-rust-root=%{_prefix} --disable-jemalloc --disable-rpath \
+  --local-rust-root=%{_prefix} --disable-jemalloc --disable-rpath --enable-llvm-link-shared \
+  %{!?with_bundled_llvm: --llvm-root=%{llvm_root} --disable-codegen-tests} \
   --enable-debuginfo --disable-debuginfo-only-std --enable-debuginfo-tools --disable-debuginfo-lines \
   --enable-extended --enable-vendor --enable-verbose-tests --release-channel=stable
 
