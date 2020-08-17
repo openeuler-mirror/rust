@@ -1,13 +1,13 @@
 %{!?channel: %global channel stable}
-%global bootstrap_rust 1.37.0
-%global bootstrap_cargo 1.37.0
-%global bootstrap_channel 1.37.0
-%global bootstrap_date 2019-08-15
+%global bootstrap_rust 1.44.0
+%global bootstrap_cargo 1.44.0
+%global bootstrap_channel 1.44.0
+%global bootstrap_date 2020-06-04
 %bcond_with llvm_static
 %bcond_with bundled_llvm
 %bcond_without bundled_libgit2
 Name:                rust
-Version:             1.38.0
+Version:             1.45.2
 Release:             1
 Summary:             The Rust Programming Language
 License:             (ASL 2.0 or MIT) and (BSD and MIT)
@@ -18,9 +18,6 @@ URL:                 https://www.rust-lang.org
 %global rustc_package rustc-%{channel}-src
 %endif
 Source0:             https://static.rust-lang.org/dist/%{rustc_package}.tar.xz
-Patch1:              rust-pr57840-llvm7-debuginfo-variants.patch
-Patch2:              rustc-1.38.0-rebuild-bootstrap.patch
-Patch3:              0001-WIP-minimize-the-rust-std-component.patch
 %{lua: function rust_triple(arch)
   local abi = "gnu"
   if arch == "armv7hl" then
@@ -67,7 +64,7 @@ BuildRequires:       pkgconfig(openssl) pkgconfig(zlib) pkgconfig(libssh2) >= 1.
 BuildRequires:       %{python}
 %if %with bundled_llvm
 BuildRequires:       cmake3 >= 3.4.3
-Provides:            bundled(llvm) = 8.0.0
+Provides:            bundled(llvm) = 10.0.1
 %else
 BuildRequires:       cmake >= 2.8.11
 %if %defined llvm
@@ -76,14 +73,13 @@ BuildRequires:       cmake >= 2.8.11
 %global llvm llvm
 %global llvm_root %{_prefix}
 %endif
-BuildRequires:       %{llvm}-devel >= 6.0
+BuildRequires:       %{llvm}-devel >= 8.0
 %if %with llvm_static
 BuildRequires:       %{llvm}-static libffi-devel
 %endif
 %endif
 BuildRequires:       procps-ng gdb
-Provides:            bundled(libbacktrace) = 8.1.0
-Provides:            bundled(miniz) = 2.0.7
+Provides:            bundled(libbacktrace) = 1.0.20200219
 Provides:            rustc = %{version}-%{release}
 Provides:            rustc%{?_isa} = %{version}-%{release}
 Requires:            %{name}-std-static%{?_isa} = %{version}-%{release}
@@ -128,7 +124,7 @@ programs.
 %package lldb
 Summary:             LLDB pretty printers for Rust
 BuildArch:           noarch
-Requires:            lldb python2-lldb
+Requires:            lldb python3-lldb
 Requires:            %{name}-debugger-common = %{version}-%{release}
 %description lldb
 This package includes the rust-lldb script, which allows easier debugging of Rust
@@ -136,15 +132,13 @@ programs.
 
 %package doc
 Summary:             Documentation for Rust
-Provides:            rust-help = %{version}-%{release}
-Obsoletes:           rust-help < %{version}-%{release}
 %description doc
 This package includes HTML documentation for the Rust programming language and
 its standard library.
 
 %package -n cargo
 Summary:             Rust's package manager and build tool
-Provides:            bundled(libgit2) = 0.28.2
+Provides:            bundled(libgit2) = 1.0.0
 BuildRequires:       git
 Requires:            rust
 Obsoletes:           cargo-vendor <= 0.1.23
@@ -170,7 +164,7 @@ A tool for formatting Rust code according to style guidelines.
 
 %package -n rls
 Summary:             Rust Language Server for IDE integration
-Provides:            bundled(libgit2) = 0.28.2
+Provides:            bundled(libgit2) = 1.0.0
 Requires:            rust-analysis %{name}%{?_isa} = %{version}-%{release}
 Obsoletes:           rls-preview < 1.31.6
 Provides:            rls-preview = %{version}-%{release}
@@ -212,16 +206,12 @@ test -f '%{local_rust_root}/bin/cargo'
 test -f '%{local_rust_root}/bin/rustc'
 %endif
 %setup -q -n %{rustc_package}
-%patch1 -p1 -R
-%patch2 -p1
-%patch3 -p1
 %if "%{python}" == "python3"
 sed -i.try-py3 -e '/try python2.7/i try python3 "$@"' ./configure
 %endif
 %if %without bundled_llvm
 rm -rf src/llvm-project/
 %endif
-rm -rf src/llvm-emscripten/
 rm -rf vendor/curl-sys/curl/
 rm -rf vendor/jemalloc-sys/jemalloc/
 rm -rf vendor/libz-sys/src/zlib/
@@ -263,6 +253,7 @@ export LIBSSH2_SYS_USE_PKG_CONFIG=1
   --disable-rpath \
   %{enable_debuginfo} \
   --enable-extended \
+  --tools=analysis,cargo,clippy,rls,rustfmt,src \
   --enable-vendor \
   --enable-verbose-tests \
   %{?codegen_units_std} \
@@ -329,8 +320,6 @@ ln -sT ../rust/html/cargo/ %{buildroot}%{_docdir}/cargo/html
 %dir %{rustlibdir}/%{rust_triple}
 %dir %{rustlibdir}/%{rust_triple}/lib
 %{rustlibdir}/%{rust_triple}/lib/*.so
-%{rustlibdir}/%{rust_triple}/codegen-backends/
-%exclude %{_bindir}/*miri
 
 %files std-static
 %dir %{rustlibdir}
@@ -407,6 +396,9 @@ ln -sT ../rust/html/cargo/ %{buildroot}%{_docdir}/cargo/html
 %{rustlibdir}/%{rust_triple}/analysis/
 
 %changelog
+* Mon Aug 17 2020 zhangjiapeng <zhangjiapeng9@huawei.com> - 1.45.2
+- Update to 1.45.2
+
 * Wed Jul 15 2020 yanan li <liyanan032@huawei.com> - 1.38.0-1
 - Update to 1.38.0-1
 
