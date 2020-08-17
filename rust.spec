@@ -6,10 +6,12 @@
 %global __provides_exclude_from ^(%{_docdir}|%{rustlibdir}/src)/.*$
 %global __requires_exclude_from ^(%{_docdir}|%{rustlibdir}/src)/.*$
 %global _find_debuginfo_opts --keep-section .rustc
+%bcond_with bundled_llvm
+%global llvm_root %{_prefix}
 
 Name:           rust
 Version:        1.29.1
-Release:        3
+Release:        4
 Summary:        A systems programming language
 License:        (ASL 2.0 or MIT) and (BSD and MIT)
 URL:            https://www.rust-lang.org
@@ -17,11 +19,11 @@ Source0:        https://static.rust-lang.org/dist/rustc-1.29.1-src.tar.xz
 Patch0000:      rust-52876-const-endianess.patch
 Patch0001:      0001-std-stop-backtracing-when-the-frames-are-full.patch
 Patch0002:      0001-Set-more-llvm-function-attributes-for-__rust_try.patch
-BuildRequires:  cargo >= 1.28.0 (%{name} >= 1.28.0 with %{name} <= 1.29.1)
+BuildRequires:  cargo >= 1.28.0 (%{name} >= 1.28.0 with %{name} <= 1.29.1) llvm-devel
 BuildRequires:  make gcc-c++ ncurses-devel curl python3 cmake3 >= 3.4.3 procps-ng
 BuildRequires:  pkgconfig(libcurl) pkgconfig(liblzma) pkgconfig(openssl) pkgconfig(zlib) gdb
 Requires:       %{name}-devel = 1.29.1-%{release}
-Provides:       bundled(llvm) = 7.0 bundled(libbacktrace) = 8.1.0 bundled(miniz) = 1.16~beta+r1
+Provides:       bundled(libbacktrace) = 8.1.0 bundled(miniz) = 1.16~beta+r1
 Provides:       rustc = 1.29.1-%{release}
 
 %description
@@ -132,7 +134,7 @@ Man pages and other related help documents for rust.
 %autosetup -n rustc-1.29.1-src -p1
 
 sed -i.try-py3 -e '/try python2.7/i try python3 "$@"' ./configure
-
+rm -rf src/llvm/
 rm -rf src/llvm-emscripten/
 sed -e '/*\//q' src/libbacktrace/backtrace.h >src/libbacktrace/LICENSE-libbacktrace
 
@@ -147,7 +149,8 @@ find src/vendor -name .cargo-checksum.json -exec sed -i.uncheck -e 's/"files":{[
 
 %configure --disable-option-checking --libdir=%{_prefix}/lib \
   --build=%{rust_triple} --host=%{rust_triple} --target=%{rust_triple} \
-  --local-rust-root=%{_prefix} --disable-jemalloc --disable-rpath \
+  --local-rust-root=%{_prefix} --disable-jemalloc --disable-rpath --enable-llvm-link-shared \
+  %{!?with_bundled_llvm: --llvm-root=%{llvm_root} --disable-codegen-tests} \
   --enable-debuginfo --disable-debuginfo-only-std --enable-debuginfo-tools --disable-debuginfo-lines \
   --enable-extended --enable-vendor --enable-verbose-tests --release-channel=stable
 
@@ -283,5 +286,8 @@ python3 ./x.py test --no-fail-fast rustfmt || :
 %{_mandir}/man1/cargo*.1*
 
 %changelog
+* Mon Apr 17 2020 zhujunhao <zhujunhao8@huawei.com> - 1.29.1-4
+- add llvm in rust
+
 * Thu Dec 5 2019 wutao <wutao61@huawei.com> - 1.29.1-3
 - Package init
