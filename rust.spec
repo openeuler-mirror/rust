@@ -6,10 +6,12 @@
 %global __provides_exclude_from ^(%{_docdir}|%{rustlibdir}/src)/.*$
 %global __requires_exclude_from ^(%{_docdir}|%{rustlibdir}/src)/.*$
 %global _find_debuginfo_opts --keep-section .rustc
+%bcond_with bundled_llvm
+%global llvm_root %{_prefix}
 
 Name:           rust
 Version:        1.29.1
-Release:        3
+Release:        4
 Summary:        A systems programming language
 License:        (ASL 2.0 or MIT) and (BSD and MIT)
 URL:            https://www.rust-lang.org
@@ -17,11 +19,11 @@ Source0:        https://static.rust-lang.org/dist/rustc-1.29.1-src.tar.xz
 Patch0000:      rust-52876-const-endianess.patch
 Patch0001:      0001-std-stop-backtracing-when-the-frames-are-full.patch
 Patch0002:      0001-Set-more-llvm-function-attributes-for-__rust_try.patch
-BuildRequires:  cargo >= 1.28.0 (%{name} >= 1.28.0 with %{name} <= 1.29.1)
+BuildRequires:  cargo >= 1.28.0 (%{name} >= 1.28.0 with %{name} <= 1.29.1) llvm-devel
 BuildRequires:  make gcc-c++ ncurses-devel curl python3 cmake3 >= 3.4.3 procps-ng
 BuildRequires:  pkgconfig(libcurl) pkgconfig(liblzma) pkgconfig(openssl) pkgconfig(zlib) gdb
 Requires:       %{name}-devel = 1.29.1-%{release}
-Provides:       bundled(llvm) = 7.0 bundled(libbacktrace) = 8.1.0 bundled(miniz) = 1.16~beta+r1
+Provides:       bundled(libbacktrace) = 8.1.0 bundled(miniz) = 1.16~beta+r1
 Provides:       rustc = 1.29.1-%{release}
 
 %description
@@ -283,5 +285,8 @@ python3 ./x.py test --no-fail-fast rustfmt || :
 %{_mandir}/man1/cargo*.1*
 
 %changelog
+* Mon Apr 17 2020 zhujunhao <zhujunhao8@huawei.com> - 1.29.1-4
+- add llvm in rust
+
 * Thu Dec 5 2019 wutao <wutao61@huawei.com> - 1.29.1-3
 - Package init
