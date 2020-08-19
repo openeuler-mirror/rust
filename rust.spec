@@ -396,7 +396,7 @@ ln -sT ../rust/html/cargo/ %{buildroot}%{_docdir}/cargo/html
 %{rustlibdir}/%{rust_triple}/analysis/
 
 %changelog
-* Mon Aug 17 2020 zhangjiapeng <zhangjiapeng9@huawei.com> - 1.45.2
+* Mon Aug 17 2020 zhangjiapeng <zhangjiapeng9@huawei.com> - 1.45.2-1
 - Update to 1.45.2
 
 * Wed Jul 15 2020 yanan li <liyanan032@huawei.com> - 1.38.0-1
