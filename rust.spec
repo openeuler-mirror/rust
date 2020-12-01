@@ -8,7 +8,7 @@
 %bcond_without bundled_libgit2
 Name:                rust
 Version:             1.45.2
-Release:             1
+Release:             2
 Summary:             The Rust Programming Language
 License:             (ASL 2.0 or MIT) and (BSD and MIT)
 URL:                 https://www.rust-lang.org
@@ -130,12 +130,6 @@ Requires:            %{name}-debugger-common = %{version}-%{release}
 This package includes the rust-lldb script, which allows easier debugging of Rust
 programs.
 
-%package doc
-Summary:             Documentation for Rust
-%description doc
-This package includes HTML documentation for the Rust programming language and
-its standard library.
-
 %package -n cargo
 Summary:             Rust's package manager and build tool
 Provides:            bundled(libgit2) = 1.0.0
@@ -147,18 +141,13 @@ Provides:            cargo-vendor = %{version}-%{release}
 Cargo is a tool that allows Rust projects to declare their various dependencies
 and ensure that you'll always get a repeatable build.
 
-%package -n cargo-doc
-Summary:             Documentation for Cargo
-BuildArch:           noarch
-Requires:            rust-doc = %{version}-%{release}
-%description -n cargo-doc
-This package includes HTML documentation for Cargo.
 
 %package -n rustfmt
 Summary:             Tool to find and fix Rust formatting issues
 Requires:            cargo
 Obsoletes:           rustfmt-preview < 1.0.0
 Provides:            rustfmt-preview = %{version}-%{release}
+Conflicts:           rustfmt-preview < 1.0.0
 %description -n rustfmt
 A tool for formatting Rust code according to style guidelines.
 
@@ -168,6 +157,7 @@ Provides:            bundled(libgit2) = 1.0.0
 Requires:            rust-analysis %{name}%{?_isa} = %{version}-%{release}
 Obsoletes:           rls-preview < 1.31.6
 Provides:            rls-preview = %{version}-%{release}
+Conflicts:           rls-preview < 1.31.6
 %description -n rls
 The Rust Language Server provides a server that runs in the background,
 providing IDEs, editors, and other tools with information about Rust programs.
@@ -179,6 +169,7 @@ Summary:             Lints to catch common mistakes and improve your Rust code
 Requires:            cargo %{name}%{?_isa} = %{version}-%{release}
 Obsoletes:           clippy-preview <= 0.0.212
 Provides:            clippy-preview = %{version}-%{release}
+Conflicts:           clippy-preview <= 0.0.212
 %description -n clippy
 A collection of lints to catch common mistakes and improve your Rust code.
 
@@ -196,6 +187,15 @@ Requires:            rust-std-static%{?_isa} = %{version}-%{release}
 This package contains analysis data files produced with rustc's -Zsave-analysis
 feature for the Rust standard library. The RLS (Rust Language Server) uses this
 data to provide information about the Rust standard library.
+
+%package help
+Summary:     Help documents for rust
+
+Provides:    %{name}-doc = %{version}-%{release} %{name}-cargo-doc = %{version}-%{release}
+Obsoletes:   %{name}-doc < %{version}-%{release} %{name}-cargo-doc < %{version}-%{release}
+
+%description help
+Man pages and other related help documents for rust.
 
 %prep
 %ifarch %{bootstrap_arches}
@@ -310,12 +310,11 @@ ln -sT ../rust/html/cargo/ %{buildroot}%{_docdir}/cargo/html
 %files
 %license COPYRIGHT LICENSE-APACHE LICENSE-MIT
 %license vendor/backtrace-sys/src/libbacktrace/LICENSE-libbacktrace
+%license %{_docdir}/%{name}/html/*.txt
 %doc README.md
 %{_bindir}/rustc
 %{_bindir}/rustdoc
 %{_libdir}/*.so
-%{_mandir}/man1/rustc.1*
-%{_mandir}/man1/rustdoc.1*
 %dir %{rustlibdir}
 %dir %{rustlibdir}/%{rust_triple}
 %dir %{rustlibdir}/%{rust_triple}/lib
@@ -341,35 +340,14 @@ ln -sT ../rust/html/cargo/ %{buildroot}%{_docdir}/cargo/html
 %{_bindir}/rust-lldb
 %{rustlibdir}/etc/lldb_*.py*
 
-%files doc
-%docdir %{_docdir}/%{name}
-%dir %{_docdir}/%{name}
-%dir %{_docdir}/%{name}/html
-%{_docdir}/%{name}/html/*/
-%{_docdir}/%{name}/html/*.html
-%{_docdir}/%{name}/html/*.css
-%{_docdir}/%{name}/html/*.ico
-%{_docdir}/%{name}/html/*.js
-%{_docdir}/%{name}/html/*.png
-%{_docdir}/%{name}/html/*.svg
-%{_docdir}/%{name}/html/*.woff
-%license %{_docdir}/%{name}/html/*.txt
-%license %{_docdir}/%{name}/html/*.md
-
 %files -n cargo
 %license src/tools/cargo/LICENSE-APACHE src/tools/cargo/LICENSE-MIT src/tools/cargo/LICENSE-THIRD-PARTY
 %doc src/tools/cargo/README.md
 %{_bindir}/cargo
-%{_mandir}/man1/cargo*.1*
 %{_sysconfdir}/bash_completion.d/cargo
 %{_datadir}/zsh/site-functions/_cargo
 %dir %{_datadir}/cargo
 %dir %{_datadir}/cargo/registry
-
-%files -n cargo-doc
-%docdir %{_docdir}/cargo
-%dir %{_docdir}/cargo
-%{_docdir}/cargo/html
 
 %files -n rustfmt
 %{_bindir}/rustfmt
@@ -395,7 +373,30 @@ ln -sT ../rust/html/cargo/ %{buildroot}%{_docdir}/cargo/html
 %files analysis
 %{rustlibdir}/%{rust_triple}/analysis/
 
+%files help
+%dir %{_docdir}/%{name}
+%dir %{_docdir}/cargo
+%dir %{_docdir}/%{name}/html
+%docdir %{_docdir}/%{name}
+%docdir %{_docdir}/cargo
+%{_docdir}/%{name}/html/*/
+%{_docdir}/%{name}/html/*.html
+%{_docdir}/%{name}/html/*.css
+%{_docdir}/%{name}/html/*.ico
+%{_docdir}/%{name}/html/*.js
+%{_docdir}/%{name}/html/*.png
+%{_docdir}/%{name}/html/*.svg
+%{_docdir}/%{name}/html/*.woff
+%license %{_docdir}/%{name}/html/*.md
+%{_docdir}/cargo/html
+%{_mandir}/man1/rustc.1*
+%{_mandir}/man1/rustdoc.1*
+%{_mandir}/man1/cargo*.1*
+
 %changelog
+* Mon Nov 30 2020 Jeffery.Gao <gaojianxing@huawei.com> - 1.45.2-2
+- fix upgrade error
+
 * Mon Aug 17 2020 zhangjiapeng <zhangjiapeng9@huawei.com> - 1.45.2-1
 - Update to 1.45.2
 
