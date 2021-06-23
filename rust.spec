@@ -12,7 +12,7 @@
 %bcond_without lldb
 Name:                rust
 Version:             1.51.0
-Release:             1
+Release:             2
 Summary:             The Rust Programming Language
 License:             (ASL 2.0 or MIT) and (BSD and MIT)
 URL:                 https://www.rust-lang.org
@@ -35,6 +35,7 @@ Patch0006:           rustc-1.51.0-backport-pr81728.patch
 Patch0007:           rustc-1.51.0-backport-pr83629.patch
 Patch0008:           rustc-1.48.0-disable-libssh2.patch
 Patch0009:           rustc-1.51.0-disable-http2.patch
+Patch0010:           clippy-driver-usage-should-user-friendly.patch
 %{lua: function rust_triple(arch)
   local abi = "gnu"
   if arch == "armv7hl" then
@@ -254,6 +255,7 @@ sed -i.try-python -e '/^try python3 /i try "%{python}" "$@"' ./configure
 rm -rf src/llvm-project/
 mkdir -p src/llvm-project/libunwind/
 %endif
+%patch0010 -p1
 rm -rf vendor/curl-sys/curl/
 rm -rf vendor/jemalloc-sys/jemalloc/
 rm -rf vendor/libssh2-sys/libssh2/
@@ -459,6 +461,9 @@ export %{rust_env}
 %{_mandir}/man1/cargo*.1*
 
 %changelog
+* Wed 23 Jun 2021 sunguoshuai <sunguoshuai@huawei.com> - 1.51.0-2
+- clippy-driver usage should user friendly
+
 * Fri May 07 2021 wangyue <wangyue92@huawei.com> - 1.51.0-1
 - Update to 1.51.0
 
