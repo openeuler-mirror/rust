@@ -1,0 +1,30 @@
+From 4a2c2e81316960ffbcc3dc1c91758420d6db0a6e Mon Sep 17 00:00:00 2001
+From: si-gui <sunguoshuai@huawei.com>
+Date: Thu, 24 Jun 2021 16:35:12 +0800
+Subject: [PATCH] cargo help clippy should have description to user
+
+---
+ src/tools/cargo/src/bin/cargo/cli.rs | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/src/tools/cargo/src/bin/cargo/cli.rs b/src/tools/cargo/src/bin/cargo/cli.rs
+index 243f6ac0..c2dd8785 100644
+--- a/src/tools/cargo/src/bin/cargo/cli.rs
++++ b/src/tools/cargo/src/bin/cargo/cli.rs
+@@ -92,7 +92,12 @@ Run with 'cargo -Z [FLAG] [SUBCOMMAND]'"
+                     if is_verbose {
+                         drop_println!(config, "    {:<20} {}", name, path.display());
+                     } else {
+-                        drop_println!(config, "    {}", name);
++                        if name.as_str() == "clippy" {
++                            let summary = "Checks a package to catch common mistakes and improve your Rust code.";
++                            drop_println!(config, "    {}", name, summary);
++                        } else {
++                            drop_println!(config, "    {}", name);
++                        }
+                     }
+                 }
+             }
+-- 
+2.30.0
+
