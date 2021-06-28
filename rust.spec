@@ -12,7 +12,7 @@
 %bcond_without lldb
 Name:                rust
 Version:             1.51.0
-Release:             1
+Release:             4
 Summary:             The Rust Programming Language
 License:             (ASL 2.0 or MIT) and (BSD and MIT)
 URL:                 https://www.rust-lang.org
@@ -35,6 +35,9 @@ Patch0006:           rustc-1.51.0-backport-pr81728.patch
 Patch0007:           rustc-1.51.0-backport-pr83629.patch
 Patch0008:           rustc-1.48.0-disable-libssh2.patch
 Patch0009:           rustc-1.51.0-disable-http2.patch
+Patch0010:           clippy-driver-usage-should-user-friendly.patch
+Patch0011:           cargo-help-clippy-should-have-description-to-user.patch
+Patch0012:           fix-a-println-wrong-format.patch
 %{lua: function rust_triple(arch)
   local abi = "gnu"
   if arch == "armv7hl" then
@@ -149,12 +152,6 @@ Requires:            %{name}-debugger-common = %{version}-%{release}
 This package includes the rust-lldb script, which allows easier debugging of Rust
 programs.
 
-%package doc
-Summary:             Documentation for Rust
-%description doc
-This package includes HTML documentation for the Rust programming language and
-its standard library.
-
 %package -n cargo
 Summary:             Rust's package manager and build tool
 %if %with bundled_libgit2
@@ -168,18 +165,12 @@ Provides:            cargo-vendor = %{version}-%{release}
 Cargo is a tool that allows Rust projects to declare their various dependencies
 and ensure that you'll always get a repeatable build.
 
-%package -n cargo-doc
-Summary:             Documentation for Cargo
-BuildArch:           noarch
-Requires:            rust-doc = %{version}-%{release}
-%description -n cargo-doc
-This package includes HTML documentation for Cargo.
-
 %package -n rustfmt
 Summary:             Tool to find and fix Rust formatting issues
 Requires:            cargo
 Obsoletes:           rustfmt-preview < 1.0.0
 Provides:            rustfmt-preview = %{version}-%{release}
+Conflicts:           rustfmt-preview < 1.0.0
 %description -n rustfmt
 A tool for formatting Rust code according to style guidelines.
 
@@ -191,6 +182,8 @@ Provides:            bundled(libgit2) = 1.1.0
 Requires:            rust-analysis %{name}%{?_isa} = %{version}-%{release}
 Obsoletes:           rls-preview < 1.31.6
 Provides:            rls-preview = %{version}-%{release}
+Conflicts:           rls-preview < 1.31.6
+
 %description -n rls
 The Rust Language Server provides a server that runs in the background,
 providing IDEs, editors, and other tools with information about Rust programs.
@@ -202,6 +195,7 @@ Summary:             Lints to catch common mistakes and improve your Rust code
 Requires:            cargo %{name}%{?_isa} = %{version}-%{release}
 Obsoletes:           clippy-preview <= 0.0.212
 Provides:            clippy-preview = %{version}-%{release}
+Conflicts:           clippy-preview <= 0.0.212
 %description -n clippy
 A collection of lints to catch common mistakes and improve your Rust code.
 
@@ -219,6 +213,15 @@ Requires:            rust-std-static%{?_isa} = %{version}-%{release}
 This package contains analysis data files produced with rustc's -Zsave-analysis
 feature for the Rust standard library. The RLS (Rust Language Server) uses this
 data to provide information about the Rust standard library.
+
+%package help
+Summary:     Help documents for rust
+
+Provides:    %{name}-doc = %{version}-%{release} %{name}-cargo-doc = %{version}-%{release}
+Obsoletes:   %{name}-doc < %{version}-%{release} %{name}-cargo-doc < %{version}-%{release}
+
+%description help
+Man pages and other related help documents for rust.
 
 %prep
 cd ../SOURCES
@@ -254,6 +257,9 @@ sed -i.try-python -e '/^try python3 /i try "%{python}" "$@"' ./configure
 rm -rf src/llvm-project/
 mkdir -p src/llvm-project/libunwind/
 %endif
+%patch0010 -p1
+%patch0011 -p1
+%patch0012 -p1
 rm -rf vendor/curl-sys/curl/
 rm -rf vendor/jemalloc-sys/jemalloc/
 rm -rf vendor/libssh2-sys/libssh2/
@@ -373,12 +379,11 @@ export %{rust_env}
 
 %files
 %license COPYRIGHT LICENSE-APACHE LICENSE-MIT
+%license %{_docdir}/%{name}/html/*.txt
 %doc README.md
 %{_bindir}/rustc
 %{_bindir}/rustdoc
 %{_libdir}/*.so
-%{_mandir}/man1/rustc.1*
-%{_mandir}/man1/rustdoc.1*
 %dir %{rustlibdir}
 %dir %{rustlibdir}/%{rust_triple}
 %dir %{rustlibdir}/%{rust_triple}/lib
@@ -406,35 +411,15 @@ export %{rust_env}
 %{rustlibdir}/etc/lldb_*
 %endif
 
-%files doc
-%docdir %{_docdir}/%{name}
-%dir %{_docdir}/%{name}
-%dir %{_docdir}/%{name}/html
-%{_docdir}/%{name}/html/*/
-%{_docdir}/%{name}/html/*.html
-%{_docdir}/%{name}/html/*.css
-%{_docdir}/%{name}/html/*.js
-%{_docdir}/%{name}/html/*.png
-%{_docdir}/%{name}/html/*.svg
-%{_docdir}/%{name}/html/*.woff
-%license %{_docdir}/%{name}/html/*.txt
-%license %{_docdir}/%{name}/html/*.md
-
 %files -n cargo
 %license src/tools/cargo/LICENSE-APACHE src/tools/cargo/LICENSE-MIT src/tools/cargo/LICENSE-THIRD-PARTY
 %doc src/tools/cargo/README.md
 %{_bindir}/cargo
 %{_libexecdir}/cargo*
-%{_mandir}/man1/cargo*.1*
 %{_sysconfdir}/bash_completion.d/cargo
 %{_datadir}/zsh/site-functions/_cargo
 %dir %{_datadir}/cargo
 %dir %{_datadir}/cargo/registry
-
-%files -n cargo-doc
-%docdir %{_docdir}/cargo
-%dir %{_docdir}/cargo
-%{_docdir}/cargo/html
 
 %files -n rustfmt
 %{_bindir}/rustfmt
@@ -460,18 +445,46 @@ export %{rust_env}
 %files analysis
 %{rustlibdir}/%{rust_triple}/analysis/
 
+%files help
+%dir %{_docdir}/%{name}
+%dir %{_docdir}/cargo
+%dir %{_docdir}/%{name}/html
+%docdir %{_docdir}/%{name}
+%docdir %{_docdir}/cargo
+%{_docdir}/%{name}/html/*/
+%{_docdir}/%{name}/html/*.html
+%{_docdir}/%{name}/html/*.css
+%{_docdir}/%{name}/html/*.js
+%{_docdir}/%{name}/html/*.png
+%{_docdir}/%{name}/html/*.svg
+%{_docdir}/%{name}/html/*.woff
+%license %{_docdir}/%{name}/html/*.md
+%{_docdir}/cargo/html
+%{_mandir}/man1/rustc.1*
+%{_mandir}/man1/rustdoc.1*
+%{_mandir}/man1/cargo*.1*
+
 %changelog
+* Thu 24 Jun 2021 sunguoshuai <sunguoshuai@huawei.com> - 1.51.0-4
+- fix a println wrong format
+
+* Thu 24 Jun 2021 sunguoshuai <sunguoshuai@huawei.com> - 1.51.0-3
+- cargo help clippy should have description to user
+
+* Wed 23 Jun 2021 sunguoshuai <sunguoshuai@huawei.com> - 1.51.0-2
+- clippy-driver usage should user friendly
+
 * Fri May 07 2021 wangyue <wangyue92@huawei.com> - 1.51.0-1
 - Update to 1.51.0
 
-* Mon Aug 17 2020 zhangjiapeng <zhangjiapeng9@huawei.com> - 1.45.2-1
+* Mon Nov 30 2020 Jeffery.Gao <gaojianxing@huawei.com> - 1.45.2-2
+- fix upgrade error
+
+* Mon Sep 21 2020 Jeffery.Gao <gaojianxing@huawei.com> - 1.45.2-1
 - Update to 1.45.2
 
-* Wed Jul 15 2020 yanan li <liyanan032@huawei.com> - 1.38.0-1
-- Update to 1.38.0-1
-
-* Fri Jun 5 2020 yaokai <yaoaki13@huawei.com> - 1.30.0-1
-- Update to 1.30.0-1
+* Mon Apr 17 2020 zhujunhao <zhujunhao8@huawei.com> - 1.29.1-4
+- add llvm in rust
 
 * Thu Dec 5 2019 wutao <wutao61@huawei.com> - 1.29.1-3
 - Package init

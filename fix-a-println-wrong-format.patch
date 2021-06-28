@@ -1,0 +1,25 @@
+From edbb1b7011fe7bccf8a2efc71d806d61cd8e0c9b Mon Sep 17 00:00:00 2001
+From: si-gui <sunguoshuai@huawei.com>
+Date: Thu, 24 Jun 2021 20:15:14 +0800
+Subject: [PATCH] fix a println wrong format
+
+---
+ src/tools/cargo/src/bin/cargo/cli.rs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/tools/cargo/src/bin/cargo/cli.rs b/src/tools/cargo/src/bin/cargo/cli.rs
+index c2dd8785..9c240690 100644
+--- a/src/tools/cargo/src/bin/cargo/cli.rs
++++ b/src/tools/cargo/src/bin/cargo/cli.rs
+@@ -94,7 +94,7 @@ Run with 'cargo -Z [FLAG] [SUBCOMMAND]'"
+                     } else {
+                         if name.as_str() == "clippy" {
+                             let summary = "Checks a package to catch common mistakes and improve your Rust code.";
+-                            drop_println!(config, "    {}", name, summary);
++                            drop_println!(config, "    {:<20} {}", name, summary);
+                         } else {
+                             drop_println!(config, "    {}", name);
+                         }
+-- 
+2.30.0
+
