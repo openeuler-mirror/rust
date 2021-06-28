@@ -1,0 +1,25 @@
+From 1062e11170d93df3c53b01c1a630a7151af3a003 Mon Sep 17 00:00:00 2001
+From: si-gui <sunguoshuai@huawei.com>
+Date: Wed, 23 Jun 2021 14:36:09 +0800
+Subject: [PATCH] clippy-driver usage should user friendly
+
+---
+ src/tools/clippy/src/driver.rs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/tools/clippy/src/driver.rs b/src/tools/clippy/src/driver.rs
+index f5f6c09e..7af74f15 100644
+--- a/src/tools/clippy/src/driver.rs
++++ b/src/tools/clippy/src/driver.rs
+@@ -95,7 +95,7 @@ fn display_help() {
+ Checks a package to catch common mistakes and improve your Rust code.
+ 
+ Usage:
+-    cargo clippy [options] [--] [<opts>...]
++    clippy-driver [options] [--] [<opts>...]
+ 
+ Common options:
+     -h, --help               Print this message
+-- 
+2.30.0
+
