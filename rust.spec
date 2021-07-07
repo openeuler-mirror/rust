@@ -5,14 +5,14 @@
 %global bootstrap_channel 1.50.0
 %global bootstrap_date 2021-02-11
 %bcond_with llvm_static
-%bcond_with bundled_llvm
+%bcond_without bundled_llvm
 %bcond_without bundled_libgit2
 %bcond_with disabled_libssh2
 %bcond_without curl_http2
 %bcond_without lldb
 Name:                rust
 Version:             1.51.0
-Release:             4
+Release:             5
 Summary:             The Rust Programming Language
 License:             (ASL 2.0 or MIT) and (BSD and MIT)
 URL:                 https://www.rust-lang.org
@@ -52,7 +52,16 @@ Patch0012:           fix-a-println-wrong-format.patch
   end
   return arch.."-unknown-linux-"..abi
 end}
+%{lua: function rust_musl_triple(arch)
+  local abi = "musl"
+  return arch.."-unknown-linux-"..abi
+end}
+%{lua: function rust_musl_root(arch)
+  return "--musl-root-"..arch
+end}
 %global rust_triple %{lua: print(rust_triple(rpm.expand("%{_target_cpu}")))}
+%global rust_musl_triple %{lua: print(rust_musl_triple(rpm.expand("%{_target_cpu}")))}
+%global rust_musl_root %{lua: print(rust_musl_root(rpm.expand("%{_target_cpu}")))}
 %if %defined bootstrap_arches
 %{lua: do
   local bootstrap_arches = {}
@@ -80,7 +89,7 @@ BuildRequires:       cargo >= %{bootstrap_cargo}
 BuildRequires:       (%{name} >= %{bootstrap_rust} with %{name} <= %{version})
 %global local_rust_root %{_prefix}
 %endif
-BuildRequires:       make gcc gcc-c++ ncurses-devel curl curl-devel pkgconfig(libcurl) pkgconfig(liblzma)
+BuildRequires:       make gcc gcc-c++ ncurses-devel curl curl-devel musl-libc-static musl-gcc pkgconfig(libcurl) pkgconfig(liblzma)
 BuildRequires:       pkgconfig(openssl) pkgconfig(zlib) pkgconfig(libssh2) >= 1.6.0
 %global python python3
 BuildRequires:       %{python}
@@ -117,6 +126,8 @@ Requires:            /usr/bin/cc
 %global llvm_has_filecheck 1
 %endif
 %endif
+%global musl_root %{_prefix}/musl
+
 %description
 Rust is a systems programming language that runs blazingly fast, prevents
 segfaults, and guarantees thread safety.
@@ -311,7 +322,8 @@ if [ "$max_cpus" -ge 1 -a "$max_cpus" -lt "$ncpus" ]; then
 fi
 %configure --disable-option-checking \
   --libdir=%{common_libdir} \
-  --build=%{rust_triple} --host=%{rust_triple} --target=%{rust_triple} \
+  %{rust_musl_root}=%{musl_root} \
+  --build=%{rust_triple} --host=%{rust_triple} --target=%{rust_triple},%{rust_musl_triple} \
   --python=%{python} \
   --local-rust-root=%{local_rust_root} \
   %{!?with_bundled_llvm: --llvm-root=%{llvm_root} \
@@ -388,12 +400,18 @@ export %{rust_env}
 %dir %{rustlibdir}/%{rust_triple}
 %dir %{rustlibdir}/%{rust_triple}/lib
 %{rustlibdir}/%{rust_triple}/lib/*.so
+%dir %{rustlibdir}/%{rust_musl_triple}
+%dir %{rustlibdir}/%{rust_musl_triple}/lib
 
 %files std-static
 %dir %{rustlibdir}
 %dir %{rustlibdir}/%{rust_triple}
 %dir %{rustlibdir}/%{rust_triple}/lib
 %{rustlibdir}/%{rust_triple}/lib/*.rlib
+%dir %{rustlibdir}/%{rust_musl_triple}
+%dir %{rustlibdir}/%{rust_musl_triple}/lib
+%{rustlibdir}/%{rust_musl_triple}/lib/*.rlib
+%{rustlibdir}/%{rust_musl_triple}/lib/self-contained/*.o
 
 %files debugger-common
 %dir %{rustlibdir}
@@ -444,6 +462,7 @@ export %{rust_env}
 
 %files analysis
 %{rustlibdir}/%{rust_triple}/analysis/
+%{rustlibdir}/%{rust_musl_triple}/analysis/
 
 %files help
 %dir %{_docdir}/%{name}
@@ -465,6 +484,9 @@ export %{rust_env}
 %{_mandir}/man1/cargo*.1*
 
 %changelog
+* Thu 01 Jul 2021 Jiajie Li <lijiajie11@huawei.com> - 1.51.0-5
+- Add support for musl target
+
 * Thu 24 Jun 2021 sunguoshuai <sunguoshuai@huawei.com> - 1.51.0-4
 - fix a println wrong format
 
