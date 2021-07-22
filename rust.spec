@@ -5,14 +5,14 @@
 %global bootstrap_channel 1.50.0
 %global bootstrap_date 2021-02-11
 %bcond_with llvm_static
-%bcond_without bundled_llvm
+%bcond_with bundled_llvm
 %bcond_without bundled_libgit2
 %bcond_with disabled_libssh2
 %bcond_without curl_http2
 %bcond_without lldb
 Name:                rust
 Version:             1.51.0
-Release:             5
+Release:             6
 Summary:             The Rust Programming Language
 License:             (ASL 2.0 or MIT) and (BSD and MIT)
 URL:                 https://www.rust-lang.org
@@ -104,12 +104,14 @@ BuildRequires:       cmake >= 2.8.11
 %global llvm llvm
 %global llvm_root %{_prefix}
 %endif
+BuildRequires:       %{llvm} >= 9.0
 BuildRequires:       %{llvm}-devel >= 9.0
 %if %with llvm_static
 BuildRequires:       %{llvm}-static libffi-devel
 %endif
 %endif
 BuildRequires:       procps-ng gdb
+BuildRequires:       ninja-build
 Provides:            rustc = %{version}-%{release}
 Provides:            rustc%{?_isa} = %{version}-%{release}
 Requires:            %{name}-std-static%{?_isa} = %{version}-%{release}
@@ -263,10 +265,6 @@ rm -rf vendor/libnghttp2-sys/
 %endif
 %if "%{python}" != "python3"
 sed -i.try-python -e '/^try python3 /i try "%{python}" "$@"' ./configure
-%endif
-%if %without bundled_llvm
-rm -rf src/llvm-project/
-mkdir -p src/llvm-project/libunwind/
 %endif
 %patch0010 -p1
 %patch0011 -p1
@@ -484,6 +482,9 @@ export %{rust_env}
 %{_mandir}/man1/cargo*.1*
 
 %changelog
+* Thu 08 Jul 2021 Jiajie Li <lijiajie11@huawei.com> - 1.51.0-6
+- Add build require of ninja and llvm
+
 * Thu 01 Jul 2021 Jiajie Li <lijiajie11@huawei.com> - 1.51.0-5
 - Add support for musl target
 
