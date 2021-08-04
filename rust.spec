@@ -12,7 +12,7 @@
 %bcond_without lldb
 Name:                rust
 Version:             1.51.0
-Release:             6
+Release:             7
 Summary:             The Rust Programming Language
 License:             (ASL 2.0 or MIT) and (BSD and MIT)
 URL:                 https://www.rust-lang.org
@@ -110,7 +110,7 @@ BuildRequires:       %{llvm}-devel >= 9.0
 BuildRequires:       %{llvm}-static libffi-devel
 %endif
 %endif
-BuildRequires:       procps-ng gdb
+BuildRequires:       procps-ng
 BuildRequires:       ninja-build
 Provides:            rustc = %{version}-%{release}
 Provides:            rustc%{?_isa} = %{version}-%{release}
@@ -482,6 +482,9 @@ export %{rust_env}
 %{_mandir}/man1/cargo*.1*
 
 %changelog
+* Wed Aug 04 2021 chenyanpanHW <chenyanpan@huawei.com> - 1.51.0-7
+- DESC: delete BuildRequires gdb
+
 * Thu 08 Jul 2021 Jiajie Li <lijiajie11@huawei.com> - 1.51.0-6
 - Add build require of ninja and llvm
 
