@@ -12,7 +12,7 @@
 %bcond_without lldb
 Name:                rust
 Version:             1.51.0
-Release:             1
+Release:             2
 Summary:             The Rust Programming Language
 License:             (ASL 2.0 or MIT) and (BSD and MIT)
 URL:                 https://www.rust-lang.org
@@ -35,6 +35,7 @@ Patch0006:           rustc-1.51.0-backport-pr81728.patch
 Patch0007:           rustc-1.51.0-backport-pr83629.patch
 Patch0008:           rustc-1.48.0-disable-libssh2.patch
 Patch0009:           rustc-1.51.0-disable-http2.patch
+Patch0010:           CVE-2021-29922.patch
 %{lua: function rust_triple(arch)
   local abi = "gnu"
   if arch == "armv7hl" then
@@ -245,6 +246,7 @@ test -f '%{local_rust_root}/bin/rustc'
 %endif
 %if %without curl_http2
 %patch0009 -p1
+%patch0010 -p1
 rm -rf vendor/libnghttp2-sys/
 %endif
 %if "%{python}" != "python3"
@@ -461,6 +463,9 @@ export %{rust_env}
 %{rustlibdir}/%{rust_triple}/analysis/
 
 %changelog
+* Wed Aug 18 2021 yaoxin <yaoxin30@huawei.com> - 1.51.0-2
+- Fix CVE-2021-29922
+
 * Fri May 07 2021 wangyue <wangyue92@huawei.com> - 1.51.0-1
 - Update to 1.51.0
 
