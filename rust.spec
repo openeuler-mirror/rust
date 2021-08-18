@@ -12,7 +12,7 @@
 %bcond_without lldb
 Name:                rust
 Version:             1.51.0
-Release:             7
+Release:             8
 Summary:             The Rust Programming Language
 License:             (ASL 2.0 or MIT) and (BSD and MIT)
 URL:                 https://www.rust-lang.org
@@ -38,6 +38,7 @@ Patch0009:           rustc-1.51.0-disable-http2.patch
 Patch0010:           clippy-driver-usage-should-user-friendly.patch
 Patch0011:           cargo-help-clippy-should-have-description-to-user.patch
 Patch0012:           fix-a-println-wrong-format.patch
+Patch0013:           CVE-2021-29922.patch
 %{lua: function rust_triple(arch)
   local abi = "gnu"
   if arch == "armv7hl" then
@@ -269,6 +270,7 @@ sed -i.try-python -e '/^try python3 /i try "%{python}" "$@"' ./configure
 %patch0010 -p1
 %patch0011 -p1
 %patch0012 -p1
+%patch0013 -p1
 rm -rf vendor/curl-sys/curl/
 rm -rf vendor/jemalloc-sys/jemalloc/
 rm -rf vendor/libssh2-sys/libssh2/
@@ -482,6 +484,9 @@ export %{rust_env}
 %{_mandir}/man1/cargo*.1*
 
 %changelog
+* Wed Aug 18 2021 yaoxin <yaoxin30@huawei.com> - 1.51.0-8
+- Fix CVE-2021-29922
+
 * Wed Aug 04 2021 chenyanpanHW <chenyanpan@huawei.com> - 1.51.0-7
 - DESC: delete BuildRequires gdb
 
