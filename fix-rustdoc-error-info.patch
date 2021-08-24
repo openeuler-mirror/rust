@@ -1,0 +1,39 @@
+From c2b79c6142da1a757f9b4a0b58883e39aade779c Mon Sep 17 00:00:00 2001
+From: caodongxia <315816521@qq.com>
+Date: Tue, 24 Aug 2021 09:11:28 +0800
+Subject: [PATCH] fix rustdoc error info
+
+---
+ compiler/rustc_session/src/config.rs        | 2 +-
+ vendor/rustc-ap-rustc_session/src/config.rs | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/compiler/rustc_session/src/config.rs b/compiler/rustc_session/src/config.rs
+index a6d4dcb34..ab8ef7a3c 100644
+--- a/compiler/rustc_session/src/config.rs
++++ b/compiler/rustc_session/src/config.rs
+@@ -891,7 +891,7 @@ pub fn build_target_config(opts: &Options, target_override: Option<Target>) -> T
+             opts.error_format,
+             &format!(
+                 "Error loading target specification: {}. \
+-            Use `--print target-list` for a list of built-in targets",
++            Use `rustc --print target-list` for a list of built-in targets",
+                 e
+             ),
+         )
+diff --git a/vendor/rustc-ap-rustc_session/src/config.rs b/vendor/rustc-ap-rustc_session/src/config.rs
+index 9d73c3b44..223e4eead 100644
+--- a/vendor/rustc-ap-rustc_session/src/config.rs
++++ b/vendor/rustc-ap-rustc_session/src/config.rs
+@@ -891,7 +891,7 @@ pub fn build_target_config(opts: &Options, target_override: Option<Target>) -> T
+             opts.error_format,
+             &format!(
+                 "Error loading target specification: {}. \
+-            Use `--print target-list` for a list of built-in targets",
++            Use `rustc --print target-list` for a list of built-in targets",
+                 e
+             ),
+         )
+-- 
+2.27.0
+
